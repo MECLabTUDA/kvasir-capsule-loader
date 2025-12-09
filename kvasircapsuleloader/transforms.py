@@ -17,7 +17,8 @@ _T_val = A.Compose(
         A.Resize(224, 224),
         A.Normalize((0.5,), (0.225,)),
         ToTensorV2(),
-    ]
+    ],
+    bbox_params=A.BboxParams(format="yolo"),
 )
 _T_test = _T_val
 
