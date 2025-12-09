@@ -47,7 +47,7 @@ class KvasirCapsuleSubset(Dataset):
 class KvasirCapsuleDataset:
     def __init__(
         self,
-        split: Optional[PatientRatioSplit] = None,
+        split: Optional[PatientRatioSplit | Path] = None,
         download: bool = True,
         path: Optional[Path] = None,
     ):
@@ -64,23 +64,17 @@ class KvasirCapsuleDataset:
         if split is None:
             self.split = PatientRatioSplit(train=0.8, val=0.1, test=0.1)
             self.split.generate(self.metadata)
+        elif isinstance(split, Path) or isinstance(split, str):
+            self.split.load(Path(split), self.metadata)
         else:
             self.split = split
 
-    @property
-    def train(self, transform: Optional[A.BaseCompose] = None) -> KvasirCapsuleSubset:
-        samples = self.split.samples["train"]
-        return KvasirCapsuleSubset("train", samples, transform)
-
-    @property
-    def val(self, transform: Optional[A.BaseCompose] = None) -> KvasirCapsuleSubset:
-        samples = self.split.samples["val"]
-        return KvasirCapsuleSubset("val", samples, transform)
-
-    @property
-    def test(self, transform: Optional[A.BaseCompose] = None) -> KvasirCapsuleSubset:
-        samples = self.split.samples["test"]
-        return KvasirCapsuleSubset("test", samples, transform)
+        # dynamically add methods to myself to retrieve subsets
+        for phase in self.split._ratios:
+            def get_subset(self, transform: Optional[A.BaseCompose] = None):
+                samples = self.split.samples[phase]
+                return KvasirCapsuleSubset(phase, samples, transform)
+            setattr(self, phase, get_subset)
 
     def exists(self, fail: bool = False) -> bool:
         """

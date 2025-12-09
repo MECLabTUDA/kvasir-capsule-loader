@@ -21,5 +21,11 @@ _T_val = A.Compose(
     bbox_params=A.BboxParams(format="yolo"),
 )
 _T_test = _T_val
+_T_id = _T_val  # for in-distribution test sets
 
-kvasir_capsule_transforms = {"train": _T_train, "val": _T_val, "test": _T_test}
+kvasir_capsule_transforms = {
+    "train": _T_train,
+    "val": _T_val,
+    "test": _T_test,
+    "id": _T_id,
+}
