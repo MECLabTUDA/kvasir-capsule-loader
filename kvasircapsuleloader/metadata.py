@@ -68,7 +68,7 @@ class KvasirCapsuleMetadata:
         :return: _description_
         :rtype: Dict[FindingClass, Dict[str, List[KvasirCapsuleSample]]]
         """
-        S = {}
+        S: Dict[FindingClass, Dict[str, List[KvasirCapsuleSample]]] = {}
         for sample in self.samples:
             if sample.finding_class not in S:
                 S[sample.finding_class] = {}

@@ -126,10 +126,10 @@ class PatientRatioSplit:
         data = {
             "ratios": {**self._ratios},
             "seed": self._seed,
-            "samples": {key: [] for key in self._ratios},
+            "samples": {
+                phase: [sample.filename for sample in self.samples[phase]]
+                for phase in self._ratios
+            },
         }
-        for phase in self._ratios:
-            for sample in self.samples[phase]:
-                data["samples"][phase].append(sample.filename)
         with open(path, "w") as f:
             json.dump(data, f)
