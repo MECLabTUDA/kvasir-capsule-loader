@@ -8,6 +8,7 @@ An inofficial abstraction for the KvasirCapsule dataset that aims to provide the
 * **Canonical representation** of finding categories, finding classes, folder structures and bounding boxes
 * **Unit tests**, type hints for type checking and error handling
 
+![python-package](https://github.com/MECLabTUDA/kvasir-capsule-loader/actions/workflows/python-package.yml/badge.svg)
 
 ## Rationale
 
