@@ -13,7 +13,7 @@ class KvasirCapsuleMetadata:
     This is basically an abstraction for the records in metadata.csv.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._data = pd.read_csv(KVASIR_CAPSULE_PATH / "metadata.csv", delimiter=";")
         self.video_ids = self._data.video_id
         self.samples: List[KvasirCapsuleSample] = []

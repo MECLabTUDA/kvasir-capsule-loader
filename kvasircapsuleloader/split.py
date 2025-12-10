@@ -17,21 +17,13 @@ class PatientRatioSplit:
     Generalized split by ratio that respects patient IDs (Experimental)
     """
 
-    def __init__(
-        self,
-        train: float,
-        **ratios,
-    ):
+    def __init__(self, **ratios):
         """
-        :param train: Ratio for training set (other ratios are optional)
-        :type train: float
         :raises ValueError: If ratios don't add up to 1.0
         """
-        if sum(list(ratios.values())) + train != 1.0:
+        if sum(list(ratios.values())) != 1.0:
             raise ValueError("Split ratios need to sum up to 1.")
-        self.ratio_train = train
         self._ratios = ratios
-        self._ratios.update(train=train)
 
     def generate(
         self,
@@ -65,19 +57,22 @@ class PatientRatioSplit:
                 )
                 logging.warning(f"Ignoring class {finding_class}.")
                 continue
+
+            first_phase = list(self._ratios.keys())[0]
+            N = {
+                first_phase: N_patients
+            }
             # make sure that sets represent at least one patient
-            N = {}
-            N["train"] = N_patients
             for phase, ratio in self._ratios.items():
-                if phase == "train":
+                if phase == first_phase:
                     continue
                 N[phase] = max(int(np.round(N_patients * ratio)), 1)
-                N["train"] -= N[phase]
-            assert N["train"] > 0
+                N[first_phase] -= N[phase]
+            assert N[first_phase] > 0
             idx = np.arange(N_patients)
             if strategy == "sort":
                 # sort indices descending by number of samples
-                # --> training set will contain most samples
+                # --> first set will contain most samples
                 idx = np.argsort([len(p) for p in patients])[::-1]
             else:
                 np.random.shuffle(idx)
@@ -107,8 +102,7 @@ class PatientRatioSplit:
         with open(path, "r") as f:
             data = json.load(f)
         split = PatientRatioSplit(
-            data["ratios"]["train"],
-            **{k: v for k, v in data["ratios"].items() if k != "train"},
+            **data["ratios"]
         )
         split._seed = data["seed"]
         S = metadata.samples_by_filename()
@@ -133,3 +127,10 @@ class PatientRatioSplit:
         }
         with open(path, "w") as f:
             json.dump(data, f)
+
+
+def make_kfold_split(k: int):
+    assert k > 0
+    return PatientRatioSplit(
+        **{ f"fold{i}": 1 / k for i in range(k) }
+    )
