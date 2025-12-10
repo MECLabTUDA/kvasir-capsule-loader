@@ -48,13 +48,13 @@ Please note that this call will automatically download the KvasirCapsule dataset
 
 TODOs:
 
-* [ ] Splits for k-fold cross-validation
+* [x] Splits for k-fold cross-validation
 * [x] Splits for OOD-detection (held-out training set)
 * [ ] Visualization utilities
 * [ ] Allow user to select only samples with bounding boxes
 * [ ] Selection criteria, only include selected classes
 * [ ] Unit tests for all relevant modules
-
+* [ ] Download unlabelled videos
 
 ## Acknowledgement
 
