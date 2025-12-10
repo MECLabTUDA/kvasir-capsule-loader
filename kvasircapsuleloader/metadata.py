@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import pandas as pd
 
@@ -97,6 +97,10 @@ class KvasirCapsuleMetadata:
         """
         return len(self.samples)
 
-    def filter(self, include: Optional[List[FindingClass]] = None, exclude: Optional[List[FindingClass]] = None) -> "KvasirCapsuleMetadata":
+    def filter(
+        self,
+        include: Optional[List[FindingClass]] = None,
+        exclude: Optional[List[FindingClass]] = None,
+    ) -> "KvasirCapsuleMetadata":
         # TODO implement
         raise NotImplementedError()
