@@ -42,6 +42,7 @@ class PatientRatioSplit:
         :type seed: int, optional
         """
         self._seed = seed
+        self._strategy = strategy
         self.samples: Dict[str, List[KvasirCapsuleSample]] = {
             key: [] for key in self._ratios
         }
@@ -105,6 +106,7 @@ class PatientRatioSplit:
             **data["ratios"]
         )
         split._seed = data["seed"]
+        split._strategy = data["strategy"]
         S = metadata.samples_by_filename()
         for phase in split._ratios:
             split.samples[phase] = [S[filename] for filename in data["samples"][phase]]
@@ -120,6 +122,7 @@ class PatientRatioSplit:
         data = {
             "ratios": {**self._ratios},
             "seed": self._seed,
+            "strategy": self._strategy,
             "samples": {
                 phase: [sample.filename for sample in self.samples[phase]]
                 for phase in self._ratios
@@ -130,6 +133,12 @@ class PatientRatioSplit:
 
 
 def make_kfold_split(k: int):
+    """
+    Factoy function that creates a split definition for k-fold cross-validation.
+
+    :param k: Number of folds, must be > 0
+    :type k: int
+    """
     assert k > 0
     return PatientRatioSplit(
         **{ f"fold{i}": 1 / k for i in range(k) }
