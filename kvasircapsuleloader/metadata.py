@@ -56,6 +56,7 @@ class KvasirCapsuleMetadata:
         :return: Mapping of sample filenames to corresponding KvasirCapsuleSample
         :rtype: Dict[str, KvasirCapsuleSample]
         """
+        # TODO cache
         return {sample.filename: sample for sample in self.samples}
 
     def samples_by_class_by_patient(
@@ -68,6 +69,7 @@ class KvasirCapsuleMetadata:
         :return: _description_
         :rtype: Dict[FindingClass, Dict[str, List[KvasirCapsuleSample]]]
         """
+        # TODO cache
         S: Dict[FindingClass, Dict[str, List[KvasirCapsuleSample]]] = {}
         for sample in self.samples:
             if sample.finding_class not in S:
@@ -94,3 +96,7 @@ class KvasirCapsuleMetadata:
         :rtype: int
         """
         return len(self.samples)
+
+    def filter(self, include: Optional[List[FindingClass]] = None, exclude: Optional[List[FindingClass]] = None) -> "KvasirCapsuleMetadata":
+        # TODO implement
+        raise NotImplementedError()
