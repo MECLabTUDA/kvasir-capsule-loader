@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional
 
 import pandas as pd
+from tqdm import tqdm
 
 from .bbox import BoundingBox
 from .config import KVASIR_CAPSULE_PATH
@@ -23,10 +24,10 @@ class KvasirCapsuleMetadata:
         """
         Load KvasirCapsuleSample instances from metadata.csv file.
         """
-        for i, row in self._data.iterrows():
+        for _, row in tqdm(self._data.iterrows()):
             finding_category = str_to_findingcategory(row.finding_category)
             finding_class = str_to_findingclass(row.finding_class)
-            if None in (row[["x1", "y1", "x2", "y2", "x3", "y3", "x4", "y4"]]):
+            if row[["x1", "y1", "x2", "y2", "x3", "y3", "x4", "y4"]].isna().any():
                 bbox = None
             else:
                 bbox = BoundingBox.from_kvasir_capsule(

@@ -33,12 +33,13 @@ class KvasirCapsuleSubset(Dataset):
     def __getitem__(self, index) -> Any:
         sample: KvasirCapsuleSample = self.samples[index]
         image = sample.load_image()
-        bboxes = sample.bbox.to_yolo() if sample.bbox else None
+        bboxes = [sample.bbox.to_yolo()] if sample.bbox else []
         class_labels = sample.finding_class.value
         if self.transform is not None:
-            augmented = self.transform(
-                image=image, bboxes=bboxes, class_labels=class_labels
-            )
+            if len(bboxes) == 0:
+                augmented = self.transform(image=image, class_labels=class_labels)
+                return augmented["image"], [[0, 0, 0, 0]], augmented["class_labels"]
+            augmented = self.transform(image=image, bboxes=bboxes, class_labels=class_labels)
             return augmented["image"], augmented["bboxes"], augmented["class_labels"]
         else:
             return image, bboxes, class_labels
@@ -71,9 +72,11 @@ class KvasirCapsuleDataset:
 
         # dynamically add methods to myself to retrieve subsets
         for phase in self.split._ratios:
-            def get_subset(self, transform: Optional[A.BaseCompose] = None):
+
+            def get_subset(transform: Optional[A.BaseCompose] = None):
                 samples = self.split.samples[phase]
                 return KvasirCapsuleSubset(phase, samples, transform)
+
             setattr(self, phase, get_subset)
 
     def exists(self, fail: bool = False) -> bool:
