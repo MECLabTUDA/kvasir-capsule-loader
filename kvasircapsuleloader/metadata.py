@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional
 
 import pandas as pd
+import numpy as np
 from tqdm import tqdm
 
 from .bbox import BoundingBox
@@ -97,6 +98,10 @@ class KvasirCapsuleMetadata:
         :rtype: int
         """
         return len(self.samples)
+
+    def num_classes(self) -> int:
+        # TODO cache
+        return len(np.unique([s.finding_class.value for s in self.samples]))
 
     def filter(
         self,

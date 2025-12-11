@@ -2,13 +2,14 @@ import itertools
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Set
 
 import numpy as np
 
 from .config import DEFAULT_RANDOM_SEED
 from .metadata import KvasirCapsuleMetadata
 from .sample import KvasirCapsuleSample
+from .types import FindingClass
 from .utils import fix_random_seed
 
 
@@ -24,6 +25,8 @@ class PatientRatioSplit:
         if sum(list(ratios.values())) != 1.0:
             raise ValueError("Split ratios need to sum up to 1.")
         self._ratios = ratios
+        self.metadata: KvasirCapsuleMetadata | None = None
+        self.classes: Set[FindingClass] = set()
 
     def generate(
         self,
@@ -38,11 +41,12 @@ class PatientRatioSplit:
         :type metadata: KvasirCapsuleMetadata
         :param strategy: _description_, defaults to "sort"
         :type strategy: Literal[&quot;shuffle&quot;, &quot;sort&quot;], optional
-        :param seed: _description_, defaults to DEFAULT_RANDOM_SEED
+        :param seed: Random seed, defaults to DEFAULT_RANDOM_SEED
         :type seed: int, optional
         """
         self._seed = seed
         self._strategy = strategy
+        self.metadata = metadata
         self.samples: Dict[str, List[KvasirCapsuleSample]] = {
             key: [] for key in self._ratios
         }
@@ -53,16 +57,13 @@ class PatientRatioSplit:
             N_patients = len(patients)
             if N_patients < len(self._ratios):
                 logging.warning(
-                    f"Could not split finding class {finding_class}: "
+                    f"Could not split finding class {finding_class}, ignoring: "
                     f"Too few patients {N_patients}, should be {len(self._ratios)} or more."
                 )
-                logging.warning(f"Ignoring class {finding_class}.")
                 continue
 
             first_phase = list(self._ratios.keys())[0]
-            N = {
-                first_phase: N_patients
-            }
+            N = {first_phase: N_patients}
             # make sure that sets represent at least one patient
             for phase, ratio in self._ratios.items():
                 if phase == first_phase:
@@ -84,6 +85,8 @@ class PatientRatioSplit:
                     list(itertools.chain.from_iterable([patients[i] for i in sub_idx]))
                 )
                 pointer += N[phase]
+            if finding_class not in self.classes:
+                self.classes.add(finding_class)
 
     @staticmethod
     def load(path: Path, metadata: KvasirCapsuleMetadata) -> "PatientRatioSplit":
@@ -102,9 +105,7 @@ class PatientRatioSplit:
         """
         with open(path, "r") as f:
             data = json.load(f)
-        split = PatientRatioSplit(
-            **data["ratios"]
-        )
+        split = PatientRatioSplit(**data["ratios"])
         split._seed = data["seed"]
         split._strategy = data["strategy"]
         S = metadata.samples_by_filename()
@@ -140,6 +141,4 @@ def make_kfold_split(k: int):
     :type k: int
     """
     assert k > 0
-    return PatientRatioSplit(
-        **{ f"fold{i}": 1 / k for i in range(k) }
-    )
+    return PatientRatioSplit(**{f"fold{i}": 1 / k for i in range(k)})

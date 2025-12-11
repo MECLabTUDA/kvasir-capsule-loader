@@ -18,10 +18,12 @@ class KvasirCapsuleSubset(Dataset):
     def __init__(
         self,
         phase: str,
+        parent: "KvasirCapsuleDataset",
         samples: List[KvasirCapsuleSample],
         transform: Optional[A.BaseCompose] = None,
     ):
         self.phase = phase
+        self.parent = parent
         self.samples: List[KvasirCapsuleSample] = samples
         self.transform = (
             kvasir_capsule_transforms.get(phase) if transform is None else transform
@@ -75,7 +77,7 @@ class KvasirCapsuleDataset:
 
             def get_subset(transform: Optional[A.BaseCompose] = None):
                 samples = self.split.samples[phase]
-                return KvasirCapsuleSubset(phase, samples, transform)
+                return KvasirCapsuleSubset(phase, self, samples, transform)
 
             setattr(self, phase, get_subset)
 
